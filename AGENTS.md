@@ -16,3 +16,4 @@
 - A single root auth provider manages identity transitions and cache teardown; inline result sign-in preserves unsaved edits without browser storage.
 - Profile photos use a private owner-scoped storage bucket and signed URLs; no profile photo is public by default.
 - Cookie consent lives in one root-mounted component backed by a pure consent helper; any analytics must be gated on that helper so nothing loads before opt-in.
+- Quiz step order, validation and progress live in a pure quiz-flow module; the quiz page only renders it, so tests cover the rules without the UI.

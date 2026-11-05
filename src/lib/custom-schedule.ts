@@ -54,7 +54,7 @@ export function inputMinutes(value: string) {
   return (hours ?? 0) * 60 + (minutes ?? 0);
 }
 export function createSchedule(answers: Answers, preferences?: { theme: Theme; color: Color }): ScheduleDocument {
-  const convert = (list: Block[], prefix: string) => list.map((b, i) => ({ ...b, id: `${prefix}-${i}`, start: minutesFromLabel(b.start), end: minutesFromLabel(b.end) }));
+  const convert = (list: Block[], prefix: string) => list.map((b, i) => ({ ...b, id: `${prefix}-${i}` }));
   const day = convert(buildDay(answers), "activity");
   const days: Record<string, Activity[]> = Object.fromEntries(["Today", ...DAYS].map((key) => [key, day.map((b) => ({ ...b }))]));
   days["Sat"] = convert(buildWeekendDay(answers, "Sat"), "sat"); days["Sun"] = convert(buildWeekendDay(answers, "Sun"), "sun");

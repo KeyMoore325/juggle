@@ -8,9 +8,9 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Juggle — Life's a lot. Let's juggle it together." },
-      { name: "description", content: "Answer 6 fun questions and get a custom schedule template you can print or download. Free, takes about 60 seconds, no sign-up needed." },
+      { name: "description", content: "Answer 7 fun questions and get a custom schedule template you can print or download. Free, takes about 60 seconds, no sign-up needed." },
       { property: "og:title", content: "Juggle — Life's a lot. Let's juggle it together." },
-      { property: "og:description", content: "A 6-question quiz that builds a custom schedule template for your life. Print or download it free." },
+      { property: "og:description", content: "A 7-question quiz that builds a custom schedule template for your life. Print or download it free." },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://juggle-schedulebuilder.lovable.app/" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -22,11 +22,12 @@ export const Route = createFileRoute("/")({
 
 const quizQuestions = [
   "Whose schedule is it?",
-  "What are you juggling most?",
-  "Plan a day or a whole week?",
-  "When does your day kick off?",
-  "How many big things per day?",
+  "What's on your plate?",
+  "Anything set in stone?",
+  "Your day runs from…",
+  "When's your brain sharpest?",
   "How do you like to focus?",
+  "What do you want more time for?",
 ];
 
 const personas = [
@@ -92,12 +93,12 @@ function Index() {
       {/* 1. Hero */}
       <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-12 md:grid-cols-2 md:py-20">
         <div>
-          <p className="mb-4 inline-block -rotate-2 rounded-full bg-sky px-4 py-1 font-extrabold">6 questions · 1 minute</p>
+          <p className="mb-4 inline-block -rotate-2 rounded-full bg-sky px-4 py-1 font-extrabold">7 questions · 1 minute</p>
           <h1 className="text-5xl font-bold leading-tight md:text-7xl">
             Life's a lot. Let's <span className="text-primary">juggle</span> it together.
           </h1>
           <p className="mt-6 max-w-md text-lg text-muted-foreground">
-            Answer 6 quick questions and get a custom schedule template made for your life — ready to print or download.
+            Answer 7 quick questions and get a custom schedule template made for your life — ready to print or download.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link to="/quiz" className="pop pop-hover rounded-2xl bg-primary px-8 py-4 text-xl font-extrabold">
@@ -123,7 +124,7 @@ function Index() {
         <h2 id="how" className="mb-8 text-3xl font-bold md:text-4xl">How it works</h2>
         <ol className="grid gap-6 md:grid-cols-3">
           {[
-            ["Take the quiz", "Six quick, fun questions about how your days roll.", "bg-primary"],
+            ["Take the quiz", "Seven quick, fun questions about how your days roll.", "bg-primary"],
             ["We work the magic", "Juggle builds a schedule template tailored to your rhythm.", "bg-sky"],
             ["Download or print", "Stick it on the fridge or open it in your spreadsheet.", "bg-sun"],
           ].map(([t, d, c], i) => (
@@ -143,7 +144,7 @@ function Index() {
         <ul className="flex flex-wrap gap-4">
           {quizQuestions.map((q, i) => (
             <li key={q}>
-              <Link to="/quiz" className={`pop pop-hover inline-block cursor-pointer rounded-full px-5 py-3 font-extrabold transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${["bg-primary", "bg-sky", "bg-sun", "bg-card", "bg-muted", "bg-sky"][i]}`}>
+              <Link to="/quiz" className={`pop pop-hover inline-block cursor-pointer rounded-full px-5 py-3 font-extrabold transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${["bg-primary", "bg-sky", "bg-sun", "bg-card", "bg-muted", "bg-sky", "bg-primary"][i]}`}>
                 {q}
               </Link>
             </li>

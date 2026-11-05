@@ -1,12 +1,13 @@
 import { describe, expect, it } from "vitest";
+import type { Answers } from "./schedule";
 import { setWeekendMode, canFullyCustomize, createSchedule, reorderActivities, resizeTimeFrame, scheduleCsv, scheduleSchema } from "./custom-schedule";
 
-const answers = { whose: "me", focus: "work", span: "weekly", start: 8, priorities: 3, pace: "sprints" } as const;
+const answers = { whose: "me", plate: ["work"], fixed: "flexible", wake: 8, sleep: 22, peak: "morning", pace: "sprints", more: "rest", span: "weekly" } as Answers;
 describe("custom schedules", () => {
   it("requires an account for full customization and saving", () => { expect(canFullyCustomize(null)).toBe(false); expect(canFullyCustomize("signed-in-user")).toBe(true); });
   it("titles the schedule for whoever it belongs to", () => {
     expect(createSchedule({ ...answers, whose: "kids" }).title).toBe("My Kids' Schedule");
-    expect(createSchedule({ ...answers, whose: "spouse" }).title).toBe("My Spouse's Schedule");
+    expect(createSchedule({ ...answers, whose: "partner" }).title).toBe("Our Couple Schedule");
     expect(createSchedule({ ...answers, whose: "family" }).title).toBe("Our Family Schedule");
   });
   it("allows independently named activities and times for every weekday", () => {
@@ -33,7 +34,7 @@ describe("custom schedules", () => {
   it("reorders activities while keeping their durations and preventing overlap", () => {
     const blocks = createSchedule(answers).days["Mon"] ?? [];
     const reordered = reorderActivities(blocks, 1, -1);
-    expect(reordered[0]?.label).toBe("Deep work"); expect(reordered[0]?.end).toBe(525); expect(reordered[1]?.start).toBe(525);
+    expect(reordered[0]?.label).toBe("Deep work"); expect(reordered[0]?.end).toBe(505); expect(reordered[1]?.start).toBe(505);
   });
   it("exports the edited title, name and individual weekday content", () => {
     const doc = createSchedule(answers); doc.title = "Key's week"; doc.name = "Key Moore";
@@ -50,9 +51,9 @@ describe("custom schedules", () => {
     expect(scheduleSchema.safeParse(doc).success).toBe(true);
   });
   it("adapts weekends to what the user is juggling", () => {
-    expect(createSchedule({ ...answers, focus: "school" }).days["Sun"]?.map((b) => b.label)).toContain("Light study / review");
-    expect(createSchedule({ ...answers, focus: "family" }).days["Sat"]?.map((b) => b.label)).toContain("Family outing");
-    const me = createSchedule({ ...answers, focus: "selfcare" });
+    expect(createSchedule({ ...answers, plate: ["school"] }).days["Sun"]?.map((b) => b.label)).toContain("Light study / review");
+    expect(createSchedule({ ...answers, plate: ["family"] }).days["Sat"]?.map((b) => b.label)).toContain("Family outing");
+    const me = createSchedule({ ...answers, plate: ["selfcare"] });
     const all = [...(me.days["Sat"] ?? []), ...(me.days["Sun"] ?? [])].map((b) => b.label);
     expect(all).toContain("Self-care"); expect(all).toContain("Journaling");
   });
