@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { type Answers } from "@/lib/schedule";
+import { getPersonality } from "@/lib/personality";
+import { PersonalityReveal } from "@/components/personality-reveal";
 import { createSchedule } from "@/lib/custom-schedule";
 import { ScheduleEditor } from "@/components/schedule-editor";
 import { AccountMenu } from "@/components/account-menu";
@@ -44,6 +46,10 @@ function Quiz() {
   const [ans, setAns] = useState<Partial<Answers>>({});
   const done = step >= QS.length;
   const question = QS[step];
+  const personality = useMemo(() => (done ? getPersonality(ans as Answers) : null), [done, ans]);
+  useEffect(() => {
+    document.title = done ? "Your Custom Schedule — Juggle" : "Schedule Quiz — Juggle";
+  }, [done]);
 
   const choose = (k: keyof Answers, v: Answers[keyof Answers]) => {
     setAns((a) => ({ ...a, [k]: v }));
@@ -56,7 +62,7 @@ function Quiz() {
         <Link to="/" className="font-display text-3xl font-bold">juggle<span className="text-primary">.</span></Link>
         <div className="flex items-center gap-4">{!done && <span className="font-extrabold" aria-live="polite">{step + 1} / {QS.length}</span>}<AccountMenu /></div>
       </header>
-      {done ? <ScheduleEditor initial={createSchedule(ans as Answers)} onRestart={() => { setAns({}); setStep(0); }} /> : question ? (
+      {done ? <ScheduleEditor initial={createSchedule(ans as Answers)} onRestart={() => { setAns({}); setStep(0); }} reveal={personality && <PersonalityReveal personality={personality} />} /> : question ? (
         <section className="mx-auto max-w-2xl px-5 py-10">
           <div className="pop mb-10 h-4 overflow-hidden rounded-full bg-card" role="progressbar" aria-valuenow={step} aria-valuemax={QS.length}>
             <div className="h-full bg-sky transition-all duration-500" style={{ width: `${(step / QS.length) * 100}%` }} />

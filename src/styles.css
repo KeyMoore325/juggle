@@ -203,3 +203,7 @@
   .schedule-paper { border: 0; box-shadow: none; padding: 0; }
   .print-day { break-inside: avoid; margin-bottom: 1.5rem; }
 }
+
+.confetti-piece { position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px; opacity: 0; animation: confetti-fall 1.8s ease-out forwards; }
+@keyframes confetti-fall { 0% { opacity: 1; translate: 0 0; } 100% { opacity: 0; translate: 0 220px; rotate: 540deg; } }
+@media (prefers-reduced-motion: reduce) { .confetti { display: none; } }

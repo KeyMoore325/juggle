@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { ArrowDown, ArrowUp, Download, LockKeyhole, Plus, Printer, RotateCcw, Save, Trash2, Check, CalendarDays } from "lucide-react";
@@ -12,7 +12,9 @@ import { saveSchedule } from "@/lib/account.functions";
 import { DAYS, fmt } from "@/lib/schedule";
 import { COLORS, THEMES, canFullyCustomize, colorSchema, themeSchema, inputMinutes, timeInput, resizeTimeFrame, reorderActivities, scheduleCsv, setWeekendMode, scheduleSchema, type Activity, type ScheduleDocument } from "@/lib/custom-schedule";
 
-export function ScheduleEditor({ initial, savedId, onRestart }: { initial: ScheduleDocument; savedId?: string; onRestart?: () => void }) {
+export function ScheduleEditor({ initial, savedId, onRestart, reveal }: { initial: ScheduleDocument; savedId?: string; onRestart?: () => void; reveal?: ReactNode }) {
+  const [customOpen, setCustomOpen] = useState(true);
+  useEffect(() => { setCustomOpen(window.matchMedia("(min-width: 768px)").matches); }, []);
   const [doc, setDoc] = useState(initial), [id, setId] = useState(savedId), [day, setDay] = useState(initial.span === "weekly" ? "Mon" : "Today");
   const [authOpen, setAuthOpen] = useState(false), [busy, setBusy] = useState(false), [dirty, setDirty] = useState(!savedId), [error, setError] = useState("");
   const blocks = doc.days[day] ?? [];
@@ -76,6 +78,7 @@ export function ScheduleEditor({ initial, savedId, onRestart }: { initial: Sched
     setDay(key);
   }
   return <section className="mx-auto max-w-7xl px-5 pb-12">
+    {reveal}
     <div className="no-print mb-8 flex flex-wrap items-end justify-between gap-5">
       <div><p className="mb-2 font-extrabold text-muted-foreground">A little less chaos. A little more you.</p><h1 className="text-4xl font-bold md:text-5xl">Your custom schedule</h1></div>
       <div className="flex flex-wrap gap-2">
@@ -83,13 +86,16 @@ export function ScheduleEditor({ initial, savedId, onRestart }: { initial: Sched
         <Button variant="secondary" onClick={download}><Download />CSV</Button>
         <Button onClick={() => { void handleSave(); }} disabled={busy}><Save />{busy ? "Saving…" : dirty || !id ? "Save schedule" : "Saved"}</Button>
         {id && <Button variant="outline" onClick={() => { void handleSave(true); }} disabled={busy}>Save a copy</Button>}
-        {onRestart && <Button size="icon" variant="ghost" aria-label="Retake quiz" title="Retake quiz" onClick={() => { if (!dirty || window.confirm("Start again? Unsaved changes will be lost.")) onRestart(); }}><RotateCcw /></Button>}
+        {onRestart && <Button variant="ghost" onClick={() => { if (!dirty || window.confirm("Start again? Unsaved changes will be lost.")) onRestart(); }}><RotateCcw aria-hidden="true" />Retake quiz</Button>}
       </div>
     </div>
     {error && <p role="alert" className="no-print mb-5 rounded-lg border border-destructive bg-card p-3 text-destructive">{error}</p>}
-    <div className="grid items-start gap-8 lg:grid-cols-[280px_minmax(0,1fr)]">
-      <aside className="no-print grid gap-7 border-b-2 border-foreground/15 pb-6 lg:sticky lg:top-5 lg:border-b-0 lg:border-r-2 lg:pr-7" aria-label="Schedule customization">
-        <div className="grid gap-4"><h2 className="text-2xl font-bold">Make it yours</h2>
+    <div className="grid items-start gap-8 md:grid-cols-[260px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
+      <aside className="no-print order-2 border-t-2 border-foreground/15 pt-6 md:order-1 md:sticky md:top-5 md:border-t-0 md:border-r-2 md:pt-0 md:pr-6" aria-label="Schedule customization">
+        <details open={customOpen} onToggle={(e) => setCustomOpen(e.currentTarget.open)} className="group">
+        <summary className="cursor-pointer list-none rounded-lg text-2xl font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"><h2 className="inline">✏️ Customize your schedule</h2> <span className="text-base text-muted-foreground group-open:hidden" aria-hidden="true">▸</span><span className="hidden text-base text-muted-foreground group-open:inline" aria-hidden="true">▾</span></summary>
+        <div className="mt-5 grid gap-7">
+        <div className="grid gap-4">
           <label className="grid gap-2 text-sm font-extrabold">Schedule title<Input value={doc.title} onChange={(e) => change({ ...doc, title: e.target.value })} maxLength={100} /></label>
           <label className="grid gap-2 text-sm font-extrabold">Your name<Input placeholder="Whose plan is this?" value={doc.name} onChange={(e) => change({ ...doc, name: e.target.value })} maxLength={80} /></label>
         </div>
@@ -104,8 +110,9 @@ export function ScheduleEditor({ initial, savedId, onRestart }: { initial: Sched
         <fieldset><legend className="mb-3 text-sm font-extrabold">Theme</legend><div className="grid grid-cols-3 gap-2">{THEMES.map((t) => <Button key={t.value} variant={doc.theme === t.value ? "default" : "outline"} aria-pressed={doc.theme === t.value} className="px-2" onClick={() => change({ ...doc, theme: t.value })}>{t.label}</Button>)}</div></fieldset>
         {!advanced && <Button onClick={() => setAuthOpen(true)} className="h-auto min-h-11 whitespace-normal py-3 font-extrabold"><LockKeyhole />Unlock full customization</Button>}
         <p className="text-sm font-semibold text-muted-foreground" role="status">{id && !dirty ? "All changes saved" : "Unsaved changes"}</p>
+        </div></details>
       </aside>
-      <div className={`schedule-paper theme-${doc.theme} palette-${doc.color} min-w-0`}>
+      <div className={`schedule-paper order-1 md:order-2 theme-${doc.theme} palette-${doc.color} min-w-0`}>
         <div className="mb-6 border-b-2 border-foreground/15 pb-5"><p className="mb-2 font-display text-lg font-bold">juggle.</p><h2 className="break-words text-3xl font-bold">{doc.title || "My Juggle Schedule"}</h2>{doc.name && <p className="mt-2 break-words font-semibold">{doc.name}'s {doc.span === "weekly" ? "week" : "day"}</p>}</div>
         {doc.span === "weekly" && <fieldset className="no-print mb-3 flex flex-wrap items-center gap-2"><legend className="sr-only">Weekends</legend><span className="text-sm font-extrabold" aria-hidden="true">Weekends:</span>{(["relaxed", "same"] as const).map((m) => <Button key={m} size="sm" variant={(doc.weekends ?? "relaxed") === m ? "default" : "outline"} aria-pressed={(doc.weekends ?? "relaxed") === m} onClick={() => change(setWeekendMode(doc, m))}>{m === "relaxed" ? "Relaxed" : "Same as weekdays"}</Button>)}</fieldset>}
         {doc.span === "weekly" && <nav className="no-print mb-5 flex flex-wrap gap-2" aria-label="Weekdays">{DAYS.map((d) => <Button key={d} aria-pressed={d === day} variant={d === day ? "default" : "outline"} onClick={() => selectDay(d)}>{d}</Button>)}</nav>}
