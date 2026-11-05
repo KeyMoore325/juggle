@@ -53,11 +53,11 @@ const features = [
   { icon: "♿", title: "Accessible", desc: "Keyboard-friendly, screen-reader ready, high contrast." },
 ];
 
-const testimonials = [
-  { quote: "I finally stopped overbooking myself. The quiz took a minute and my week actually makes sense now.", name: "Maya R.", role: "Grad student" },
-  { quote: "Printed it, stuck it on the fridge, and the whole family follows it. Magic.", name: "Daniel K.", role: "Dad of three" },
-  { quote: "As a freelancer my days were chaos. Juggle gave me deep-work blocks I actually protect.", name: "Priya S.", role: "Freelance designer" },
-];
+const benefits = [
+  { icon: "⏱️", title: "60 seconds", text: "From zero to a full schedule faster than making coffee." },
+  { icon: "🎨", title: "Made for you", text: "Built from your answers, not a one-size-fits-all template." },
+  { icon: "🖨️", title: "Fridge-ready", text: "Print it, download it, or save it to your profile." },
+]
 
 const faqs = [
   { q: "Is Juggle really free?", a: "Yes! The quiz and your custom schedule template are completely free — print or download as many as you like." },
@@ -191,8 +191,8 @@ function Index() {
         </ul>
       </section>
 
-      {/* 7. Testimonials carousel */}
-      <Testimonials />
+      {/* 7. Benefits */}
+      <Benefits />
 
       {/* 8. FAQ accordion */}
       <section className="mx-auto max-w-3xl px-5 pb-20" aria-labelledby="faq">
@@ -227,32 +227,31 @@ function Index() {
   );
 }
 
-function Testimonials() {
+function Benefits() {
   const [i, setI] = useState(0);
   useEffect(() => {
-    const id = setInterval(() => setI((v) => (v + 1) % testimonials.length), 5000);
+    const id = setInterval(() => setI((v) => (v + 1) % benefits.length), 5000);
     return () => clearInterval(id);
   }, []);
-  const t = testimonials[i]!;
+  const card = (b: (typeof benefits)[number]) => (
+    <div className="pop h-full rounded-3xl bg-card p-8">
+      <p className="text-4xl" aria-hidden="true">{b.icon}</p>
+      <h3 className="mt-3 text-2xl font-bold">{b.title}</h3>
+      <p className="mt-2 text-lg font-semibold leading-relaxed text-muted-foreground">{b.text}</p>
+    </div>
+  );
   return (
-    <section className="mx-auto max-w-3xl px-5 pb-20" aria-labelledby="quotes">
-      <h2 id="quotes" className="mb-8 text-3xl font-bold md:text-4xl">People are juggling happier</h2>
-      <figure className="pop rounded-3xl bg-card p-8" aria-live="polite">
-        <blockquote className="text-xl font-semibold leading-relaxed">“{t.quote}”</blockquote>
-        <figcaption className="mt-4 font-extrabold">
-          {t.name} <span className="font-semibold text-muted-foreground">· {t.role}</span>
-        </figcaption>
-      </figure>
-      <div className="mt-5 flex items-center justify-center gap-3">
-        {testimonials.map((_, n) => (
-          <button
-            key={n}
-            onClick={() => setI(n)}
-            aria-label={`Show testimonial ${n + 1}`}
-            aria-pressed={n === i}
-            className={`pop h-4 w-4 rounded-full transition-colors ${n === i ? "bg-primary" : "bg-card"}`}
-          />
-        ))}
+    <section className="mx-auto max-w-6xl px-5 pb-20" aria-labelledby="benefits">
+      <h2 id="benefits" className="mb-8 text-3xl font-bold md:text-4xl">Why people love planning with Juggle</h2>
+      <div className="hidden gap-6 md:grid md:grid-cols-3">{benefits.map((b) => <div key={b.title}>{card(b)}</div>)}</div>
+      <div className="md:hidden">
+        <div aria-live="polite">{card(benefits[i]!)}</div>
+        <div className="mt-5 flex items-center justify-center gap-3">
+          {benefits.map((b, n) => (
+            <button key={n} onClick={() => setI(n)} aria-label={`Show ${b.title}`} aria-pressed={n === i}
+              className={`pop h-4 w-4 rounded-full transition-colors ${n === i ? "bg-primary" : "bg-card"}`} />
+          ))}
+        </div>
       </div>
     </section>
   );

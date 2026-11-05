@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { openCookieSettings } from "@/lib/cookie-consent";
 
 export function LegalLinks() {
   return (
@@ -13,6 +14,7 @@ export function LegalLinks() {
       <Button asChild variant="link" className="h-auto whitespace-normal px-0 py-2 font-semibold text-foreground">
         <Link to="/cookies" activeProps={{ "aria-current": "page" }}>Cookie Policy</Link>
       </Button>
+      <Button type="button" variant="link" onClick={openCookieSettings} className="h-auto whitespace-normal px-0 py-2 font-semibold text-foreground">Cookie settings</Button>
     </nav>
   );
 }

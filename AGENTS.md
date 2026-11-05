@@ -15,3 +15,4 @@
 - Private account reads and writes use authenticated server functions and owner-only RLS; protected pages live under the client-only authenticated layout because sessions are browser-owned.
 - A single root auth provider manages identity transitions and cache teardown; inline result sign-in preserves unsaved edits without browser storage.
 - Profile photos use a private owner-scoped storage bucket and signed URLs; no profile photo is public by default.
+- Cookie consent lives in one root-mounted component backed by a pure consent helper; any analytics must be gated on that helper so nothing loads before opt-in.
