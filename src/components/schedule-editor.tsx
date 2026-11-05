@@ -10,7 +10,7 @@ import { useAccountAuth } from "./auth-provider";
 import { accountQuery } from "@/lib/account-query";
 import { saveSchedule } from "@/lib/account.functions";
 import { DAYS, fmt } from "@/lib/schedule";
-import { COLORS, THEMES, canFullyCustomize, colorSchema, themeSchema, inputMinutes, timeInput, resizeTimeFrame, reorderActivities, scheduleCsv, scheduleSchema, type Activity, type ScheduleDocument } from "@/lib/custom-schedule";
+import { COLORS, THEMES, canFullyCustomize, colorSchema, themeSchema, inputMinutes, timeInput, resizeTimeFrame, reorderActivities, scheduleCsv, setWeekendMode, scheduleSchema, type Activity, type ScheduleDocument } from "@/lib/custom-schedule";
 
 export function ScheduleEditor({ initial, savedId, onRestart }: { initial: ScheduleDocument; savedId?: string; onRestart?: () => void }) {
   const [doc, setDoc] = useState(initial), [id, setId] = useState(savedId), [day, setDay] = useState(initial.span === "weekly" ? "Mon" : "Today");
@@ -107,6 +107,7 @@ export function ScheduleEditor({ initial, savedId, onRestart }: { initial: Sched
       </aside>
       <div className={`schedule-paper theme-${doc.theme} palette-${doc.color} min-w-0`}>
         <div className="mb-6 border-b-2 border-foreground/15 pb-5"><p className="mb-2 font-display text-lg font-bold">juggle.</p><h2 className="break-words text-3xl font-bold">{doc.title || "My Juggle Schedule"}</h2>{doc.name && <p className="mt-2 break-words font-semibold">{doc.name}'s {doc.span === "weekly" ? "week" : "day"}</p>}</div>
+        {doc.span === "weekly" && <fieldset className="no-print mb-3 flex flex-wrap items-center gap-2"><legend className="sr-only">Weekends</legend><span className="text-sm font-extrabold" aria-hidden="true">Weekends:</span>{(["relaxed", "same"] as const).map((m) => <Button key={m} size="sm" variant={(doc.weekends ?? "relaxed") === m ? "default" : "outline"} aria-pressed={(doc.weekends ?? "relaxed") === m} onClick={() => change(setWeekendMode(doc, m))}>{m === "relaxed" ? "Relaxed" : "Same as weekdays"}</Button>)}</fieldset>}
         {doc.span === "weekly" && <nav className="no-print mb-5 flex flex-wrap gap-2" aria-label="Weekdays">{DAYS.map((d) => <Button key={d} aria-pressed={d === day} variant={d === day ? "default" : "outline"} onClick={() => selectDay(d)}>{d}</Button>)}</nav>}
         <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="text-xl font-bold">{day}</h3>{advanced && <div className="flex flex-wrap gap-2">{doc.span === "weekly" && <Button variant="outline" onClick={() => { if (window.confirm(`Replace all other weekday plans with ${day}'s plan?`)) change({ ...doc, days: { ...doc.days, ...Object.fromEntries(DAYS.map((d) => [d, blocks.map((b) => ({ ...b }))])) } }); }}>Copy to all days</Button>}<Button variant="secondary" onClick={add}><Plus />Add activity</Button></div>}</div>
         <div className="no-print grid gap-3">

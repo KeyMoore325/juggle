@@ -13,7 +13,7 @@ vi.mock("@/lib/account-query", () => ({ accountQuery: () => ({ queryKey: ["accou
 afterEach(cleanup);
 
 function renderGuestEditor() {
-  const initial = createSchedule({ focus: "work", span: "weekly", start: 8, priorities: 3, pace: "sprints" });
+  const initial = createSchedule({ whose: "me", focus: "work", span: "weekly", start: 8, priorities: 3, pace: "sprints" });
   render(<QueryClientProvider client={new QueryClient()}><ScheduleEditor initial={initial} /></QueryClientProvider>);
   return initial;
 }

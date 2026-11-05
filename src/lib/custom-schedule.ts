@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { buildDay, DAYS, type Answers, type Block } from "./schedule";
+import { buildDay, buildWeekendDay, DAYS, WHOSE_TITLES, type Answers, type Block } from "./schedule";
 
 export const themeSchema = z.enum(["playful", "minimal", "soft"]);
 export const colorSchema = z.enum(["pink", "blue", "gold", "mint"]);
@@ -13,6 +13,8 @@ export const scheduleSchema = z.object({
   name: z.string().max(80), span: z.enum(["daily", "weekly"]),
   theme: themeSchema, color: colorSchema,
   days: z.record(z.array(activitySchema).max(100)),
+  weekends: z.enum(["relaxed", "same"]).optional(),
+  stash: z.record(z.array(activitySchema).max(100)).optional(),
 }).superRefine((doc, ctx) => {
   for (const key of doc.span === "weekly" ? DAYS : ["Today"]) {
     if (!doc.days[key]) ctx.addIssue({ code: "custom", message: `Missing ${key} plan.` });
@@ -52,8 +54,21 @@ export function inputMinutes(value: string) {
   return (hours ?? 0) * 60 + (minutes ?? 0);
 }
 export function createSchedule(answers: Answers, preferences?: { theme: Theme; color: Color }): ScheduleDocument {
-  const day = buildDay(answers).map((b: Block, i) => ({ ...b, id: `activity-${i}`, start: minutesFromLabel(b.start), end: minutesFromLabel(b.end) }));
-  return { version: 1, title: "My Juggle Schedule", name: "", span: answers.span, theme: preferences?.theme ?? "playful", color: preferences?.color ?? "pink", days: Object.fromEntries(["Today", ...DAYS].map((key) => [key, day.map((b) => ({ ...b }))])) };
+  const convert = (list: Block[], prefix: string) => list.map((b, i) => ({ ...b, id: `${prefix}-${i}`, start: minutesFromLabel(b.start), end: minutesFromLabel(b.end) }));
+  const day = convert(buildDay(answers), "activity");
+  const days: Record<string, Activity[]> = Object.fromEntries(["Today", ...DAYS].map((key) => [key, day.map((b) => ({ ...b }))]));
+  days["Sat"] = convert(buildWeekendDay(answers, "Sat"), "sat"); days["Sun"] = convert(buildWeekendDay(answers, "Sun"), "sun");
+  return { version: 1, title: WHOSE_TITLES[answers.whose], name: "", span: answers.span, theme: preferences?.theme ?? "playful", color: preferences?.color ?? "pink", weekends: "relaxed", days };
+}
+/** Switch weekends between the relaxed plan and a copy of Monday, keeping the other version to switch back. */
+export function setWeekendMode(doc: ScheduleDocument, mode: "relaxed" | "same"): ScheduleDocument {
+  if ((doc.weekends ?? "relaxed") === mode) return doc;
+  const current = { Sat: doc.days["Sat"] ?? [], Sun: doc.days["Sun"] ?? [] };
+  const mon = doc.days["Mon"] ?? [];
+  const next = mode === "same"
+    ? { Sat: mon.map((b) => ({ ...b, id: `sat-${b.id}` })), Sun: mon.map((b) => ({ ...b, id: `sun-${b.id}` })) }
+    : { Sat: doc.stash?.["Sat"] ?? current.Sat, Sun: doc.stash?.["Sun"] ?? current.Sun };
+  return { ...doc, weekends: mode, stash: current, days: { ...doc.days, ...next } };
 }
 export function resizeTimeFrame(doc: ScheduleDocument, start: number, end: number): ScheduleDocument {
   if (end <= start) throw new Error("The end time must be later than the start time.");

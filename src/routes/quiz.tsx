@@ -10,7 +10,7 @@ export const Route = createFileRoute("/quiz")({
   head: () => ({
     meta: [
       { title: "Schedule Quiz — Juggle" },
-      { name: "description", content: "Answer 5 questions to generate your custom printable schedule template." },
+      { name: "description", content: "Answer 6 questions to generate your custom printable schedule template." },
       { property: "og:title", content: "Take the Juggle Schedule Quiz" },
       { property: "og:description", content: "Five questions to a schedule that fits your life." },
       { property: "og:type", content: "website" },
@@ -23,6 +23,9 @@ export const Route = createFileRoute("/quiz")({
 type Q = { key: keyof Answers; q: string; opts: { v: Answers[keyof Answers]; l: string; e: string }[] };
 
 const QS: Q[] = [
+  { key: "whose", q: "Whose schedule is it?", opts: [
+    { v: "me", l: "Me", e: "🙋" }, { v: "kids", l: "My kids", e: "🧒" },
+    { v: "spouse", l: "My spouse", e: "💞" }, { v: "family", l: "My family", e: "🏡" } ] },
   { key: "focus", q: "What are you juggling most?", opts: [
     { v: "school", l: "School", e: "🎒" }, { v: "work", l: "Work", e: "💼" },
     { v: "family", l: "Family", e: "🏡" }, { v: "selfcare", l: "Me-time", e: "🌱" } ] },
