@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { LegalLinks } from "@/components/legal-links";
 import { AccountMenu } from "@/components/account-menu";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,12 +37,19 @@ const personas = [
   { icon: "🚀", name: "Side Hustlers", blurb: "Carve out focused hours for the thing you're building." },
 ];
 
-const templates = [
-  { name: "Early Bird Daily", desc: "6 AM start, short sprints", colors: ["bg-primary", "bg-sky", "bg-sun"] },
-  { name: "Night Owl Weekly", desc: "10 AM start, deep dives", colors: ["bg-sky", "bg-primary", "bg-muted"] },
-  { name: "Family Week", desc: "School runs & family time", colors: ["bg-sun", "bg-sky", "bg-primary"] },
-  { name: "Deep Work Sprint", desc: "90-min focus blocks", colors: ["bg-primary", "bg-muted", "bg-sky"] },
-  { name: "Balanced Blend", desc: "Work, rest and me-time", colors: ["bg-sky", "bg-sun", "bg-primary"] },
+type SampleKind = "focus" | "break" | "meal" | "routine";
+const KIND_BG: Record<SampleKind, string> = { focus: "bg-primary", break: "bg-sky", meal: "bg-sun", routine: "bg-muted" };
+const templates: { name: string; desc: string; colors: string[]; day: [string, string, SampleKind][] }[] = [
+  { name: "Early Bird Daily", desc: "6 AM start, short sprints", colors: ["bg-primary", "bg-sky", "bg-sun"], day: [
+    ["6:00 AM", "Morning routine", "routine"], ["6:30 AM", "Sprint: top priority", "focus"], ["7:15 AM", "Break", "break"], ["7:25 AM", "Sprint: emails", "focus"], ["8:10 AM", "Breakfast", "meal"], ["8:40 AM", "Sprint: project work", "focus"], ["9:25 AM", "Walk", "break"], ["12:00 PM", "Lunch", "meal"], ["3:30 PM", "Wind down & plan tomorrow", "routine"]] },
+  { name: "Night Owl Weekly", desc: "10 AM start, deep dives", colors: ["bg-sky", "bg-primary", "bg-muted"], day: [
+    ["10:00 AM", "Slow morning", "routine"], ["10:30 AM", "Deep dive #1", "focus"], ["12:00 PM", "Break", "break"], ["12:20 PM", "Lunch", "meal"], ["1:20 PM", "Deep dive #2", "focus"], ["2:50 PM", "Break", "break"], ["3:10 PM", "Deep dive #3", "focus"], ["4:40 PM", "Flex / catch-up", "focus"], ["5:40 PM", "Wind down", "routine"]] },
+  { name: "Family Week", desc: "School runs & family time", colors: ["bg-sun", "bg-sky", "bg-primary"], day: [
+    ["7:00 AM", "Breakfast & school run", "routine"], ["8:30 AM", "Errands & chores", "focus"], ["10:00 AM", "Coffee break", "break"], ["10:15 AM", "Work block", "focus"], ["12:00 PM", "Lunch", "meal"], ["1:00 PM", "Appointments", "focus"], ["3:00 PM", "School pickup", "routine"], ["4:00 PM", "Homework help", "focus"], ["5:30 PM", "Family dinner", "meal"]] },
+  { name: "Deep Work Sprint", desc: "90-min focus blocks", colors: ["bg-primary", "bg-muted", "bg-sky"], day: [
+    ["8:00 AM", "Morning routine", "routine"], ["8:30 AM", "Deep work", "focus"], ["10:00 AM", "Break", "break"], ["10:20 AM", "Deep work", "focus"], ["11:50 AM", "Lunch", "meal"], ["12:50 PM", "Deep work", "focus"], ["2:20 PM", "Break", "break"], ["2:40 PM", "Flex / catch-up", "focus"], ["3:40 PM", "Plan tomorrow", "routine"]] },
+  { name: "Balanced Blend", desc: "Work, rest and me-time", colors: ["bg-sky", "bg-sun", "bg-primary"], day: [
+    ["8:00 AM", "Morning routine", "routine"], ["8:30 AM", "Focus time", "focus"], ["9:15 AM", "Stretch", "break"], ["9:25 AM", "Meetings", "focus"], ["12:00 PM", "Lunch", "meal"], ["1:00 PM", "Project work", "focus"], ["2:30 PM", "Me-time walk", "break"], ["3:00 PM", "Admin", "focus"], ["4:00 PM", "Journaling", "routine"]] },
 ];
 
 const features = [
@@ -134,8 +142,10 @@ function Index() {
         <p className="mb-8 max-w-lg text-muted-foreground">Here's what we'll ask — no trick questions, we promise.</p>
         <ul className="flex flex-wrap gap-4">
           {quizQuestions.map((q, i) => (
-            <li key={q} className={`pop rounded-full px-5 py-3 font-extrabold ${["bg-primary", "bg-sky", "bg-sun", "bg-card", "bg-muted", "bg-sky"][i]}`}>
-              {q}
+            <li key={q}>
+              <Link to="/quiz" className={`pop pop-hover inline-block cursor-pointer rounded-full px-5 py-3 font-extrabold transition-transform duration-200 hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring ${["bg-primary", "bg-sky", "bg-sun", "bg-card", "bg-muted", "bg-sky"][i]}`}>
+                {q}
+              </Link>
             </li>
           ))}
         </ul>
@@ -147,12 +157,12 @@ function Index() {
       {/* 4. Who Juggle is for */}
       <section className="mx-auto max-w-6xl px-5 pb-20" aria-labelledby="who">
         <h2 id="who" className="mb-8 text-3xl font-bold md:text-4xl">Who Juggle is for</h2>
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-          {personas.map((p) => (
-            <li key={p.name} className="pop rounded-3xl bg-card p-6 transition-transform duration-200 hover:-translate-y-2">
-              <span className="text-4xl" aria-hidden="true">{p.icon}</span>
-              <h3 className="mt-3 text-xl font-bold">{p.name}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{p.blurb}</p>
+        <ul className="grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-5">
+          {personas.map((p, i) => (
+            <li key={p.name} className={`pop rounded-3xl bg-card p-4 transition-transform duration-200 hover:-translate-y-2 sm:p-6 ${i === personas.length - 1 ? "col-span-2 sm:col-span-2 lg:col-span-1" : ""}`}>
+              <span className="block text-3xl sm:text-4xl" aria-hidden="true">{p.icon}</span>
+              <h3 className="mt-2 text-lg font-bold sm:mt-3 sm:text-xl">{p.name}</h3>
+              <p className="mt-1 text-sm text-muted-foreground sm:mt-2">{p.blurb}</p>
             </li>
           ))}
         </ul>
@@ -162,19 +172,7 @@ function Index() {
       <section id="templates" className="mx-auto max-w-6xl scroll-mt-8 px-5 pb-20" aria-labelledby="templates-h">
         <h2 id="templates-h" className="mb-3 text-3xl font-bold md:text-4xl">Example templates</h2>
         <p className="mb-8 max-w-lg text-muted-foreground">Every schedule is unique — here are a few flavors yours could take.</p>
-        <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
-          {templates.map((t) => (
-            <li key={t.name} className="pop rounded-3xl bg-card p-5 transition-transform duration-200 hover:-translate-y-2">
-              <div className="mb-4 grid gap-2" aria-hidden="true">
-                {t.colors.map((c, i) => (
-                  <div key={i} className={`h-6 rounded-lg ${c}`} style={{ width: `${100 - i * 18}%` }} />
-                ))}
-              </div>
-              <h3 className="text-lg font-bold">{t.name}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{t.desc}</p>
-            </li>
-          ))}
-        </ul>
+        <TemplateGallery />
       </section>
 
       {/* 6. Features grid */}
@@ -224,6 +222,48 @@ function Index() {
       {/* 10. Footer */}
       <Footer />
     </main>
+  );
+}
+
+function TemplateGallery() {
+  const [open, setOpen] = useState<number | null>(null);
+  const t = open === null ? null : templates[open];
+  return (
+    <>
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-5">
+        {templates.map((t, n) => (
+          <li key={t.name}>
+            <button type="button" onClick={() => setOpen(n)} aria-label={`Preview ${t.name}`}
+              className="pop h-full w-full cursor-pointer rounded-3xl bg-card p-5 text-left transition-transform duration-200 hover:-translate-y-2 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring">
+              <div className="mb-4 grid gap-2" aria-hidden="true">
+                {t.colors.map((c, i) => <div key={i} className={`h-6 rounded-lg ${c}`} style={{ width: `${100 - i * 18}%` }} />)}
+              </div>
+              <h3 className="text-lg font-bold">{t.name}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t.desc}</p>
+              <p className="mt-3 text-sm font-extrabold">Peek inside →</p>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <Dialog open={t !== null} onOpenChange={(o) => { if (!o) setOpen(null); }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto rounded-3xl border-2 border-primary bg-card">
+          {t && <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold">{t.name}</DialogTitle>
+              <DialogDescription>{t.desc} — here's a sample day.</DialogDescription>
+            </DialogHeader>
+            <ol className="grid gap-2">
+              {t.day.map(([time, label, kind]) => (
+                <li key={time + label} className={`grid grid-cols-[84px_1fr] items-center gap-3 rounded-xl px-4 py-2.5 ${KIND_BG[kind]}`}>
+                  <span className="text-sm font-semibold">{time}</span><span className="font-extrabold">{label}</span>
+                </li>
+              ))}
+            </ol>
+            <Link to="/quiz" className="pop pop-hover mt-2 inline-block rounded-2xl bg-primary px-6 py-3 text-center text-lg font-extrabold">Get a schedule like this →</Link>
+          </>}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
