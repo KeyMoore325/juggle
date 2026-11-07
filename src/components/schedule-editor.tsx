@@ -10,7 +10,8 @@ import { useAccountAuth } from "./auth-provider";
 import { accountQuery } from "@/lib/account-query";
 import { saveSchedule } from "@/lib/account.functions";
 import { DAYS, fmt } from "@/lib/schedule";
-import { COLORS, THEMES, canFullyCustomize, colorSchema, themeSchema, inputMinutes, timeInput, resizeTimeFrame, reorderActivities, scheduleCsv, setWeekendMode, scheduleSchema, type Activity, type ScheduleDocument } from "@/lib/custom-schedule";
+import { LayoutSheet } from "./schedule-layouts";
+import { COLORS, LAYOUTS, THEMES, canUseLayout, canFullyCustomize, colorSchema, themeSchema, inputMinutes, timeInput, resizeTimeFrame, reorderActivities, scheduleCsv, setWeekendMode, scheduleSchema, type Activity, type Layout, type ScheduleDocument } from "@/lib/custom-schedule";
 
 export function ScheduleEditor({ initial, savedId, onRestart, reveal }: { initial: ScheduleDocument; savedId?: string; onRestart?: () => void; reveal?: ReactNode }) {
   const [customOpen, setCustomOpen] = useState(true);
@@ -46,6 +47,11 @@ export function ScheduleEditor({ initial, savedId, onRestart, reveal }: { initia
   function patchBlock(index: number, patch: Partial<Activity>) { changeBlocks(blocks.map((b, i) => i === index ? { ...b, ...patch } : b)); }
   function renameBlock(index: number, label: string) {
     change({ ...doc, days: { ...doc.days, [day]: blocks.map((b, i) => i === index ? { ...b, label } : b) } });
+  }
+  const layout: Layout = canUseLayout(doc.layout ?? "timeblock", user?.id) ? doc.layout ?? "timeblock" : "timeblock";
+  function pickLayout(next: Layout) {
+    if (!canUseLayout(next, user?.id)) { setAuthOpen(true); return; }
+    change({ ...doc, layout: next });
   }
   function validate() {
     const result = scheduleSchema.safeParse(doc);
@@ -93,7 +99,7 @@ export function ScheduleEditor({ initial, savedId, onRestart, reveal }: { initia
       </div>
     </div>
     {error && <p role="alert" className="no-print mb-5 rounded-lg border border-destructive bg-card p-3 text-destructive">{error}</p>}
-    <div className="grid items-start gap-8 md:grid-cols-[260px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
+    <div className="schedule-grid grid items-start gap-8 md:grid-cols-[260px_minmax(0,1fr)] lg:grid-cols-[280px_minmax(0,1fr)]">
       <aside className="no-print order-2 border-t-2 border-foreground/15 pt-6 md:order-1 md:sticky md:top-5 md:border-t-0 md:border-r-2 md:pt-0 md:pr-6" aria-label="Schedule customization">
         <details open={customOpen} onToggle={(e) => setCustomOpen(e.currentTarget.open)} className="group">
         <summary className="cursor-pointer list-none rounded-lg text-2xl font-bold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ring"><h2 className="inline">✏️ Customize your schedule</h2> <span className="text-base text-muted-foreground group-open:hidden" aria-hidden="true">▸</span><span className="hidden text-base text-muted-foreground group-open:inline" aria-hidden="true">▾</span></summary>
@@ -115,12 +121,15 @@ export function ScheduleEditor({ initial, savedId, onRestart, reveal }: { initia
         </div></details>
       </aside>
       <div className={`schedule-paper order-1 md:order-2 theme-${doc.theme} palette-${doc.color} min-w-0`}>
-        <div className="mb-6 border-b-2 border-foreground/15 pb-5"><p className="mb-2 font-display text-lg font-bold">juggle.</p><h2 className="break-words text-3xl font-bold">{doc.title || "My Juggle Schedule"}</h2>{doc.name && <p className="mt-2 break-words font-semibold">{doc.name}'s {doc.span === "weekly" ? "week" : "day"}</p>}</div>
+        <fieldset className="no-print mb-5 grid gap-2"><legend className="mb-2 text-sm font-extrabold">Layout</legend><div className="flex flex-wrap gap-2">{LAYOUTS.map((l) => { const locked = !canUseLayout(l.value, user?.id); return <Button key={l.value} size="sm" variant={layout === l.value ? "default" : "outline"} aria-pressed={layout === l.value} aria-label={locked ? `${l.label} (requires an account)` : undefined} onClick={() => pickLayout(l.value)}><span aria-hidden="true">{l.emoji}</span>{l.label}{locked && <LockKeyhole aria-hidden="true" />}</Button>; })}</div></fieldset>
+        {layout === "family" && advanced && <label className="no-print mb-5 grid gap-2 text-sm font-extrabold">People on the board (comma separated)<Input value={(doc.people ?? []).join(", ")} maxLength={240} onChange={(e) => change({ ...doc, people: e.target.value.split(",").map((p) => p.trimStart()).slice(0, 6) })} /></label>}
+        <div className={`no-print mb-6 border-b-2 border-foreground/15 pb-5 ${layout === "timeblock" ? "" : "hidden"}`}><p className="mb-2 font-display text-lg font-bold">juggle.</p><h2 className="break-words text-3xl font-bold">{doc.title || "My Juggle Schedule"}</h2>{doc.name && <p className="mt-2 break-words font-semibold">{doc.name}'s {doc.span === "weekly" ? "week" : "day"}</p>}</div>
         <fieldset className="no-print mb-3 flex flex-wrap items-center gap-2"><legend className="sr-only">Plan</legend><span className="text-sm font-extrabold" aria-hidden="true">Plan:</span>{(["daily", "weekly"] as const).map((s) => <Button key={s} size="sm" variant={doc.span === s ? "default" : "outline"} aria-pressed={doc.span === s} onClick={() => setSpan(s)}><CalendarDays />{s === "daily" ? "Daily" : "Weekly"}</Button>)}</fieldset>
         {doc.span === "weekly" && <fieldset className="no-print mb-3 flex flex-wrap items-center gap-2"><legend className="sr-only">Weekends</legend><span className="text-sm font-extrabold" aria-hidden="true">Weekends:</span>{(["relaxed", "same"] as const).map((m) => <Button key={m} size="sm" variant={(doc.weekends ?? "relaxed") === m ? "default" : "outline"} aria-pressed={(doc.weekends ?? "relaxed") === m} onClick={() => change(setWeekendMode(doc, m))}>{m === "relaxed" ? "Relaxed" : "Same as weekdays"}</Button>)}</fieldset>}
-        {doc.span === "weekly" && <nav className="no-print mb-5 flex flex-wrap gap-2" aria-label="Weekdays">{DAYS.map((d) => <Button key={d} aria-pressed={d === day} variant={d === day ? "default" : "outline"} onClick={() => selectDay(d)}>{d}</Button>)}</nav>}
+        {doc.span === "weekly" && layout !== "weekly" && <nav className="no-print mb-5 flex flex-wrap gap-2" aria-label="Weekdays">{DAYS.map((d) => <Button key={d} aria-pressed={d === day} variant={d === day ? "default" : "outline"} onClick={() => selectDay(d)}>{d}</Button>)}</nav>}
         <div className="no-print mb-4 flex flex-wrap items-center justify-between gap-3"><h3 className="text-xl font-bold">{day}</h3>{advanced && <div className="flex flex-wrap gap-2">{doc.span === "weekly" && <Button variant="outline" onClick={() => { if (window.confirm(`Replace all other weekday plans with ${day}'s plan?`)) change({ ...doc, days: { ...doc.days, ...Object.fromEntries(DAYS.map((d) => [d, blocks.map((b) => ({ ...b }))])) } }); }}>Copy to all days</Button>}<Button variant="secondary" onClick={add}><Plus />Add activity</Button></div>}</div>
-        <div className="no-print grid gap-3">
+        {layout !== "timeblock" && <div className="no-print"><p className="mb-3 text-sm font-semibold text-muted-foreground">Preview of your printout. Switch to "Time-block day" to rename or edit activities.</p><LayoutSheet doc={doc} day={day} layout={layout} /></div>}
+        <div className={`no-print grid gap-3 ${layout === "timeblock" ? "" : "hidden"}`}>
           {!blocks.length && <p className="py-8 text-center text-muted-foreground">A blank day, full of possibilities.</p>}
           {blocks.map((b, index) => <div key={b.id} className={`activity-row kind-${b.kind} grid gap-3 rounded-lg p-3 ${advanced ? "md:grid-cols-[minmax(0,1fr)_auto]" : "sm:grid-cols-[150px_minmax(0,1fr)]"}`}>
             {advanced ? <><div className="grid gap-3"><Input aria-label={`Activity ${index + 1} name`} value={b.label} maxLength={120} onChange={(e) => renameBlock(index, e.target.value)} className="border-foreground/20 bg-card/70 font-bold" /><div className="flex flex-wrap gap-2">
@@ -134,7 +143,7 @@ export function ScheduleEditor({ initial, savedId, onRestart, reveal }: { initia
             </div></> : <><p className="self-center text-sm font-semibold">{fmt(b.start)} – {fmt(b.end)}</p><Input aria-label={`Activity ${index + 1} name`} value={b.label} maxLength={120} onChange={(e) => renameBlock(index, e.target.value)} className="min-w-0 border-foreground/20 bg-card/70 font-bold" /></>}
           </div>)}
         </div>
-        <div className="print-only">{(doc.span === "weekly" ? DAYS : ["Today"]).map((d) => <section key={d} className="print-day"><h3 className="mb-3 text-xl font-bold">{d}</h3><table className="w-full text-left text-sm"><thead><tr><th className="p-2">Time</th><th className="p-2">Activity</th></tr></thead><tbody>{(doc.days[d] ?? []).map((b) => <tr key={b.id} className={`activity-row kind-${b.kind}`}><td className="p-2">{fmt(b.start)} – {fmt(b.end)}</td><td className="p-2">{b.label}</td></tr>)}</tbody></table></section>)}</div>
+        <div className="print-only"><LayoutSheet doc={doc} day={day} layout={layout} print /></div>
       </div>
     </div><AuthDialog open={authOpen} onOpenChange={setAuthOpen} />
   </section>;

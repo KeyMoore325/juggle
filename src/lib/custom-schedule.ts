@@ -7,6 +7,8 @@ export const activitySchema = z.object({
   id: z.string().min(1), label: z.string().trim().min(1, "Give every activity a name.").max(120),
   start: z.number().int().min(0).max(1439), end: z.number().int().min(1).max(1440),
   kind: z.enum(["focus", "break", "meal", "routine"]),
+  locked: z.boolean().optional(),
+  section: z.enum(["Morning", "Play", "Rest", "Bedtime"]).optional(),
 }).refine((b) => b.end > b.start, { message: "Activities must end after they start." });
 export const scheduleSchema = z.object({
   version: z.literal(1), title: z.string().trim().min(1, "Add a schedule title.").max(100),
@@ -15,6 +17,8 @@ export const scheduleSchema = z.object({
   days: z.record(z.array(activitySchema).max(100)),
   weekends: z.enum(["relaxed", "same"]).optional(),
   stash: z.record(z.array(activitySchema).max(100)).optional(),
+  layout: z.enum(["timeblock", "weekly", "kids", "minimal", "family"]).optional(),
+  people: z.array(z.string().trim().max(40)).max(6).optional(),
 }).superRefine((doc, ctx) => {
   for (const key of doc.span === "weekly" ? DAYS : ["Today"]) {
     if (!doc.days[key]) ctx.addIssue({ code: "custom", message: `Missing ${key} plan.` });
@@ -34,6 +38,24 @@ export type Activity = z.infer<typeof activitySchema>;
 export type ScheduleDocument = z.infer<typeof scheduleSchema>;
 export type Theme = z.infer<typeof themeSchema>;
 export type Color = z.infer<typeof colorSchema>;
+export type Layout = NonNullable<ScheduleDocument["layout"]>;
+export const LAYOUTS: { value: Layout; label: string; emoji: string; accountOnly?: boolean }[] = [
+  { value: "timeblock", label: "Time-block day", emoji: "🧱" },
+  { value: "weekly", label: "Weekly grid", emoji: "🗓️" },
+  { value: "kids", label: "Kids' visual routine", emoji: "🧸" },
+  { value: "minimal", label: "Minimal list", emoji: "🖤" },
+  { value: "family", label: "Family board", emoji: "👨‍👩‍👧", accountOnly: true },
+];
+/** Family board is account-only; guests fall back to the time-block day. */
+export function canUseLayout(layout: Layout, userId: string | null | undefined) {
+  return !LAYOUTS.find((l) => l.value === layout)?.accountOnly || canFullyCustomize(userId);
+}
+export function defaultPeople(doc: Pick<ScheduleDocument, "name" | "title">, whose?: string): string[] {
+  if (whose === "partner") return ["Me", "Partner"];
+  if (whose === "family") return ["Parent 1", "Parent 2", "Kid 1", "Kid 2"];
+  if (whose === "kids") return ["Kid 1", "Kid 2"];
+  return [doc.name || "Me", "Person 2"];
+}
 export const THEMES: { value: Theme; label: string }[] = [
   { value: "playful", label: "Playful" }, { value: "minimal", label: "Minimal" }, { value: "soft", label: "Soft" },
 ];
@@ -58,7 +80,7 @@ export function createSchedule(answers: Answers, preferences?: { theme: Theme; c
   const day = convert(buildDay(answers), "activity");
   const days: Record<string, Activity[]> = Object.fromEntries(["Today", ...DAYS].map((key) => [key, day.map((b) => ({ ...b }))]));
   days["Sat"] = convert(buildWeekendDay(answers, "Sat"), "sat"); days["Sun"] = convert(buildWeekendDay(answers, "Sun"), "sun");
-  return { version: 1, title: WHOSE_TITLES[answers.whose], name: "", span: answers.span, theme: preferences?.theme ?? "playful", color: preferences?.color ?? "pink", weekends: "relaxed", days };
+  return { version: 1, title: WHOSE_TITLES[answers.whose], name: "", span: answers.span, theme: preferences?.theme ?? "playful", color: preferences?.color ?? "pink", weekends: "relaxed", layout: answers.whose === "kids" && answers.kidAge === "little" ? "kids" : "timeblock", people: defaultPeople({ name: "", title: "" }, answers.whose), days };
 }
 /** Switch weekends between the relaxed plan and a copy of Monday, keeping the other version to switch back. */
 export function setWeekendMode(doc: ScheduleDocument, mode: "relaxed" | "same"): ScheduleDocument {

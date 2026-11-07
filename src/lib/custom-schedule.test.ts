@@ -15,7 +15,7 @@ describe("custom schedules", () => {
     const first = doc.days["Mon"]?.[0];
     if (!first) throw new Error("Missing Monday");
     first.label = "School run"; first.start = 400; first.end = 430;
-    expect(doc.days["Tue"]?.[0]?.label).toBe("Morning routine");
+    expect(doc.days["Tue"]?.[0]?.label).toBe("Wake-up routine");
     expect(doc.days["Tue"]?.[0]?.start).toBe(480);
     expect(scheduleSchema.safeParse(doc).success).toBe(true);
   });
@@ -34,7 +34,7 @@ describe("custom schedules", () => {
   it("reorders activities while keeping their durations and preventing overlap", () => {
     const blocks = createSchedule(answers).days["Mon"] ?? [];
     const reordered = reorderActivities(blocks, 1, -1);
-    expect(reordered[0]?.label).toBe("Deep work"); expect(reordered[0]?.end).toBe(505); expect(reordered[1]?.start).toBe(505);
+    expect(reordered[0]?.label).toBe("Breakfast"); expect(reordered[0]?.end).toBe(510); expect(reordered[1]?.start).toBe(510);
   });
   it("exports the edited title, name and individual weekday content", () => {
     const doc = createSchedule(answers); doc.title = "Key's week"; doc.name = "Key Moore";
@@ -63,5 +63,14 @@ describe("custom schedules", () => {
     expect(same.days["Sat"]?.map((b) => b.label)).toEqual(doc.days["Mon"]?.map((b) => b.label));
     expect(scheduleSchema.safeParse(same).success).toBe(true);
     expect(setWeekendMode(same, "relaxed").days["Sat"]).toEqual(doc.days["Sat"]);
+  });
+});
+
+import { canUseLayout } from "./custom-schedule";
+describe("layouts", () => {
+  it("family board requires an account; other layouts are free", () => {
+    expect(canUseLayout("family", null)).toBe(false);
+    expect(canUseLayout("family", "user-1")).toBe(true);
+    for (const l of ["timeblock", "weekly", "kids", "minimal"] as const) expect(canUseLayout(l, null)).toBe(true);
   });
 });

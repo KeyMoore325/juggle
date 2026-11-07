@@ -31,7 +31,7 @@ describe("free schedule customization", () => {
     const initial = renderGuestEditor();
     fireEvent.change(screen.getByRole("textbox", { name: "Activity 1 name" }), { target: { value: "Pack lunches" } });
     expect(screen.getByRole("textbox", { name: "Activity 1 name" })).toHaveValue("Pack lunches");
-    const monday = screen.getAllByRole("table")[0];
+    const monday = document.querySelector(".print-only");
     expect(monday?.textContent).toContain("Pack lunches");
     expect(monday?.textContent).toContain("8:00 AM – 8:30 AM");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
