@@ -27,9 +27,23 @@ export function CookieConsent() {
   }, []);
 
   useEffect(() => {
-    // Analytics scripts would be loaded here, only after consent. None are installed yet.
-    if (canLoadAnalytics(consent)) document.documentElement.dataset["analyticsConsent"] = "granted";
-    else delete document.documentElement.dataset["analyticsConsent"];
+    // Umami analytics loads only after explicit analytics consent.
+    const id = "umami-script";
+    const existing = document.getElementById(id);
+    if (canLoadAnalytics(consent)) {
+      document.documentElement.dataset["analyticsConsent"] = "granted";
+      if (!existing) {
+        const s = document.createElement("script");
+        s.id = id;
+        s.defer = true;
+        s.src = "https://cloud.umami.is/script.js";
+        s.dataset["websiteId"] = "f24adf11-d683-4dbc-b8b6-96e93666f059";
+        document.head.appendChild(s);
+      }
+    } else {
+      delete document.documentElement.dataset["analyticsConsent"];
+      existing?.remove();
+    }
   }, [consent]);
 
   const save = (choice: { analytics: boolean; preferences: boolean }) => {

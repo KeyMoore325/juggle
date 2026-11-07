@@ -13,18 +13,10 @@ import {
   type Draft, type StepId,
 } from "@/lib/quiz-flow";
 import { inputMinutes, timeInput } from "@/lib/custom-schedule";
+import { pageHead } from "@/lib/og-pages";
 
 export const Route = createFileRoute("/quiz")({
-  head: () => ({
-    meta: [
-      { title: "Schedule Quiz — Juggle" },
-      { name: "description", content: "Answer 7 quick questions to generate your custom printable schedule template." },
-      { property: "og:title", content: "Take the Juggle Schedule Quiz" },
-      { property: "og:description", content: "Seven playful questions to a schedule that fits your life." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () => pageHead("quiz"),
   component: Quiz,
 });
 

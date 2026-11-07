@@ -20,6 +20,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSchedulesIdRouteImport } from './routes/_authenticated/schedules.$id'
+import { Route as ApiPublicOgPageRouteImport } from './routes/api/public/og/$page'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +77,11 @@ const AuthenticatedSchedulesIdRoute =
     path: '/schedules/$id',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicOgPageRoute = ApiPublicOgPageRouteImport.update({
+  id: '/api/public/og/$page',
+  path: '/api/public/og/$page',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/schedules/$id': typeof AuthenticatedSchedulesIdRoute
+  '/api/public/og/$page': typeof ApiPublicOgPageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/schedules/$id': typeof AuthenticatedSchedulesIdRoute
+  '/api/public/og/$page': typeof ApiPublicOgPageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/schedules/$id': typeof AuthenticatedSchedulesIdRoute
+  '/api/public/og/$page': typeof ApiPublicOgPageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/profile'
     | '/schedules/$id'
+    | '/api/public/og/$page'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/profile'
     | '/schedules/$id'
+    | '/api/public/og/$page'
   id:
     | '__root__'
     | '/'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/profile'
     | '/_authenticated/schedules/$id'
+    | '/api/public/og/$page'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   QuizRoute: typeof QuizRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
+  ApiPublicOgPageRoute: typeof ApiPublicOgPageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSchedulesIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/og/$page': {
+      id: '/api/public/og/$page'
+      path: '/api/public/og/$page'
+      fullPath: '/api/public/og/$page'
+      preLoaderRoute: typeof ApiPublicOgPageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -272,6 +292,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuizRoute: QuizRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
+  ApiPublicOgPageRoute: ApiPublicOgPageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

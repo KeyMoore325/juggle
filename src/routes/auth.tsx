@@ -2,8 +2,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AuthForm } from "@/components/auth-form";
 import { useAccountAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
+import { pageHead } from "@/lib/og-pages";
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Your Juggle Account — Sign In or Join" }, { name: "description", content: "Create a free Juggle account to fully customize and save your schedules." }, { property: "og:title", content: "Your Juggle Account" }, { property: "og:description", content: "Sign in to your saved schedules and personal planning preferences." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => pageHead("auth"),
   component: AuthPage,
 });
 function AuthPage() {

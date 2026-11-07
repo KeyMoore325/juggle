@@ -12,8 +12,9 @@ import { useAccountAuth } from "@/components/auth-provider";
 import { AccountMenu } from "@/components/account-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { pageHead } from "@/lib/og-pages";
 export const Route = createFileRoute("/_authenticated/profile")({
-  head: () => ({ meta: [{ title: "Profile & Preferences — Juggle" }, { name: "description", content: "Manage your Juggle display name, profile photo and favorite schedule colors and themes." }, { property: "og:title", content: "Your Juggle Profile" }, { property: "og:description", content: "Personalize your profile and schedule preferences." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => pageHead("profile"),
   loader: ({ context }) => context.queryClient.ensureQueryData(accountQuery()), component: Profile,
 });
 function Profile() {

@@ -4,8 +4,9 @@ import { accountQuery } from "@/lib/account-query";
 import { scheduleSchema } from "@/lib/custom-schedule";
 import { ScheduleEditor } from "@/components/schedule-editor";
 import { AccountMenu } from "@/components/account-menu";
+import { pageHead } from "@/lib/og-pages";
 export const Route = createFileRoute("/_authenticated/schedules/$id")({
-  head: () => ({ meta: [{ title: "Edit Your Saved Schedule — Juggle" }, { name: "description", content: "Customize your saved Juggle schedule with individual activities, times, themes and weekday plans." }, { property: "og:title", content: "Your Saved Juggle Schedule" }, { property: "og:description", content: "Make time for what matters with your personal schedule." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: ({ params }) => pageHead("schedule", `/schedules/${encodeURIComponent(params.id)}`),
   loader: ({ context }) => context.queryClient.ensureQueryData(accountQuery()), component: SavedSchedule,
 });
 function SavedSchedule() {

@@ -3,8 +3,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { pageHead } from "@/lib/og-pages";
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset Your Password — Juggle" }, { name: "description", content: "Securely choose a new password for your Juggle account." }, { property: "og:title", content: "Reset Your Juggle Password" }, { property: "og:description", content: "Choose a new password and return to your schedules." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }), component: ResetPassword,
+  head: () => pageHead("reset-password"), component: ResetPassword,
 });
 function ResetPassword() {
   const [recovery, setRecovery] = useState(false), [password, setPassword] = useState(""), [confirm, setConfirm] = useState(""), [busy, setBusy] = useState(false), [error, setError] = useState(""), [done, setDone] = useState(false);

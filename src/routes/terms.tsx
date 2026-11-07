@@ -1,20 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalPage } from "@/components/legal-page";
 import { termsSections } from "@/lib/legal-content";
+import { pageHead } from "@/lib/og-pages";
 
 export const Route = createFileRoute("/terms")({
-  head: () => ({
-    meta: [
-      { title: "Terms of Service | Juggle" },
-      { name: "description", content: "The rules for using Juggle, the playful custom schedule template builder." },
-      { property: "og:title", content: "Terms of Service | Juggle" },
-      { property: "og:description", content: "The rules for using Juggle, the playful custom schedule template builder." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://juggle-schedulebuilder.lovable.app/terms" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "https://juggle-schedulebuilder.lovable.app/terms" }],
-  }),
+  head: () => pageHead("terms"),
   component: TermsPage,
 });
 

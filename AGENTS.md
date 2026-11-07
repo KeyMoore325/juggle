@@ -19,3 +19,4 @@
 - Quiz step order, validation and progress live in a pure quiz-flow module; the quiz page only renders it, so tests cover the rules without the UI.
 - Schedule generation places blocks through one ordered pipeline (locked commitments → routines → meals → kids' blocks → protected block → focus → buffers/flex) in the pure schedule module; tests assert each rule there.
 - Results layouts render from one shared layout sheet used for both on-screen preview and print, scaling font by row count so each layout prints on one page; account-only layouts are gated by a pure helper.
+- Share images render PNGs from an allowlisted public page catalog using CSS brand tokens; leaf heads share that catalog, and account images never contain personal details. The server shell fills only public head tags skipped by the unchanged client-only auth layout. Use the Node renderer only in dev and the precompiled-WASM edge renderer in production.

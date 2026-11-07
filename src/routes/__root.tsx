@@ -81,8 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Juggle — Custom Schedule Templates" },
-      { name: "description", content: "Answer 5 quick questions and get a printable custom schedule." },
+      { property: "og:site_name", content: "Juggle" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -118,6 +117,11 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => {
+    // Crawlers receive public account-page tags from SSR; after hydration the
+    // router owns their leaf heads, including redirects and navigation.
+    document.querySelectorAll("[data-juggle-share-head]").forEach((tag) => tag.remove());
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

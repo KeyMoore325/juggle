@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { privateHeadMarkup } from "./lib/private-page-head";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -49,7 +50,15 @@ export default {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const normalized = await normalizeCatastrophicSsrResponse(response);
+      const markup = privateHeadMarkup(new URL(request.url).pathname);
+      if (request.method !== "GET" || normalized.status !== 200 || !markup || !normalized.headers.get("content-type")?.includes("text/html")) return normalized;
+      const html = await normalized.text();
+      const headers = new Headers(normalized.headers);
+      headers.delete("content-length");
+      // These leaf tags are public, generic and identical for all accounts.
+      const publicHead = html.replace(/<meta\b[^>]*name=["']twitter:card["'][^>]*>/g, "").replace("</head>", `${markup}</head>`);
+      return new Response(publicHead, { status: normalized.status, headers });
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

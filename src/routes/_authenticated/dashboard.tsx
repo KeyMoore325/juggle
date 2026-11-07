@@ -11,8 +11,9 @@ import { useAccountAuth } from "@/components/auth-provider";
 import { Button } from "@/components/ui/button";
 import { AccountMenu } from "@/components/account-menu";
 import { scheduleSchema } from "@/lib/custom-schedule";
+import { pageHead } from "@/lib/og-pages";
 export const Route = createFileRoute("/_authenticated/dashboard")({
-  head: () => ({ meta: [{ title: "My Saved Schedules — Juggle" }, { name: "description", content: "Your personal Juggle schedules, ready to reopen, customize or print." }, { property: "og:title", content: "My Juggle Schedules" }, { property: "og:description", content: "Keep your favorite plans together in your Juggle account." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
+  head: () => pageHead("dashboard"),
   loader: ({ context }) => context.queryClient.ensureQueryData(accountQuery()), component: Dashboard,
 });
 function Dashboard() {

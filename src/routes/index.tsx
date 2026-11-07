@@ -3,20 +3,10 @@ import { useEffect, useState } from "react";
 import { LegalLinks } from "@/components/legal-links";
 import { AccountMenu } from "@/components/account-menu";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { pageHead } from "@/lib/og-pages";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Juggle — Life's a lot. Let's juggle it together." },
-      { name: "description", content: "Answer 7 fun questions and get a custom schedule template you can print or download. Free, takes about 60 seconds, no sign-up needed." },
-      { property: "og:title", content: "Juggle — Life's a lot. Let's juggle it together." },
-      { property: "og:description", content: "A 7-question quiz that builds a custom schedule template for your life. Print or download it free." },
-      { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://juggle-schedulebuilder.lovable.app/" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-    links: [{ rel: "canonical", href: "https://juggle-schedulebuilder.lovable.app/" }],
-  }),
+  head: () => pageHead("home"),
   component: Index,
 });
 
